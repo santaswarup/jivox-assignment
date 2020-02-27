@@ -16,10 +16,10 @@ object JivoxServer extends App {
   val jivoxRoute =
     path("prob"){
       get{
-        complete(StatusCodes.Ok)
+        complete(StatusCodes.OK)
       }~
       post{
-
+        complete(StatusCodes.OK)
       }~
         pathEndOrSingleSlash {
           complete(HttpEntity(
