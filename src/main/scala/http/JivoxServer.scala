@@ -27,7 +27,7 @@ object JivoxServer extends App {
             """
               |<html>
               | <body>
-              |   Please enter the context
+              |   Waiting for jivox assignment
               | </body>
               |</html>
         """.stripMargin
