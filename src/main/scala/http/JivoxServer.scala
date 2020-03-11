@@ -1,10 +1,14 @@
 package http
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
+import com.jivox.actor.JivoxFakeServices
+import com.jivox.actor.JivoxFakeServices.InitiateFloodingOfRequests
+
+import scala.concurrent.Future
 import scala.io.StdIn
 
 object JivoxServer extends App {
@@ -13,28 +17,31 @@ object JivoxServer extends App {
   implicit val materializer = ActorMaterializer()
   import system.dispatcher
 
+  val responseBackToClient = """
+                               |<html>
+                               | <body>
+                               |   Please enter the context
+                               | </body>
+                               |</html>
+        """.stripMargin
   val jivoxRoute =
-    path("prob"){
-      get{
-        complete(StatusCodes.OK)
-      }~
-      post{
-        complete(StatusCodes.OK)
-      }~
-        pathEndOrSingleSlash {
+    pathPrefix("jivox"){
+      path("fakeMultiService"){
+        get{
           complete(HttpEntity(
             ContentTypes.`text/html(UTF-8)`,
-            """
-              |<html>
-              | <body>
-              |   Waiting for jivox assignment
-              | </body>
-              |</html>
-        """.stripMargin
+            responseBackToClient
           ))
-        }
+        }~
+          post{
+           val jivoxFakeServiceActor = system.actorOf(Props[JivoxFakeServices],"jivoxFakeService")
 
+            jivoxFakeServiceActor ! InitiateFloodingOfRequests
+            complete(Future(StatusCodes.OK))
+          }
+      }
     }
+
 
 
 
