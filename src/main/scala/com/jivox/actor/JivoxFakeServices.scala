@@ -37,7 +37,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
 
 
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
-      failureServiceLog ! ReturnAllJivoxServiceLogsFailure
+      failureServiceLog ! "ReturnAllJivoxServiceLogsFailure"
   }
 
   def getProductName(): String =
