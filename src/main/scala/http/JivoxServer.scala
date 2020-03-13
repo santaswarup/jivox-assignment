@@ -7,6 +7,7 @@ import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
 import com.jivox.actor.JivoxFakeServices
 import com.jivox.actor.JivoxFakeServices.InitiateFloodingOfRequests
+import com.jivox.actor.JivoxReadAllLogs.ReturnAllJivoxServiceLogsFailure
 
 import scala.concurrent.Future
 import scala.io.StdIn
@@ -16,6 +17,8 @@ object JivoxServer extends App {
   implicit val system = ActorSystem("JivoxHttpServerSystem")
   implicit val materializer = ActorMaterializer()
   import system.dispatcher
+
+  val jivoxFakeServiceActor = system.actorOf(Props[JivoxFakeServices],"jivoxFakeService")
 
   val responseBackToClient = """
                                |<html>
@@ -27,18 +30,26 @@ object JivoxServer extends App {
   val jivoxRoute =
     pathPrefix("jivox"){
       path("fakeMultiService"){
-        get{
-          complete(HttpEntity(
-            ContentTypes.`text/html(UTF-8)`,
-            responseBackToClient
-          ))
-        }~
-          post{
-           val jivoxFakeServiceActor = system.actorOf(Props[JivoxFakeServices],"jivoxFakeService")
+        post{
+
 
             jivoxFakeServiceActor ! InitiateFloodingOfRequests
             complete(Future(StatusCodes.OK))
           }
+      }~
+      path("getAllFailureServiceLogs"){
+        get{
+
+
+
+          jivoxFakeServiceActor ! ReturnAllJivoxServiceLogsFailure
+
+
+          complete(HttpEntity(
+            ContentTypes.`text/html(UTF-8)`,
+            responseBackToClient
+          ))
+        }
       }
     }
 

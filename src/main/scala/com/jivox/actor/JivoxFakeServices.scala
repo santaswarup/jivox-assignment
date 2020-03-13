@@ -3,40 +3,41 @@ package com.jivox.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
+
 import com.typesafe.config.ConfigFactory
 
 import scala.util.Random
 
 object JivoxFakeServices{
 
-  case class JivoxServiceDomainData(requestID: UUID, productName: String, location: String)
-  case class JivoxServiceFailure(tenant : String, hostedService: String, domainData : JivoxServiceDomainData )
-  case object JivoxServiceSuccess
+  val jivoxFakeServiceActorSystem = ActorSystem("JivoxFakeServicesActorSystem",ConfigFactory.load("jivox.conf"))
   case object InitiateFloodingOfRequests
 
 }
 
 class JivoxFakeServices extends Actor with ActorLogging{
   import com.jivox.actor.JivoxFakeServices._
+  import com.jivox.actor.JivoxLogHandler._
+  import com.jivox.actor.JivoxReadAllLogs._
+
   override def receive: Receive = {
     case InitiateFloodingOfRequests =>
       log.info(s"Flooding of request from multiple services initiated")
-      val jivoxFakeServiceActorSystem = ActorSystem("JivoxFakeServicesActorSystem",ConfigFactory.load("jivox.conf"))
+
       val logHandler = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxLogHandler")
 
-      (0 to 100).foreach { _ =>
+      (0 to 10).foreach { _ =>
         val randomNumber = Random.nextInt()
         val uuid:UUID = UUID.randomUUID()
         val domainData: JivoxServiceDomainData = JivoxServiceDomainData(uuid,getProductName(),getLocation())
-        if(randomNumber % 2 == 0){
-          log.info("Sending serviceSuccess to LogHandler")
-          logHandler ! JivoxServiceSuccess
-        }else
-        {
-          log.info("Sending serviceFailure to LogHandler")
-          logHandler ! JivoxServiceFailure(getTenant(),getServer(), domainData)
-        }
+        logHandler ! JivoxServiceLogsFailure(getTenant(),getServer(), getProductName(), getLocation)
+
       }
+    case ReturnAllJivoxServiceLogsFailure =>
+
+
+      val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
+      failureServiceLog ! ReturnAllJivoxServiceLogsFailure
   }
 
   def getProductName(): String =
