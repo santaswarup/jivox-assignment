@@ -39,11 +39,11 @@ object JivoxServer extends App {
 
           implicit val timeout:Timeout = Timeout(1 second)
 
-          val failureLogs:Seq[String] = Seq()
+          val failureLogs:StringBuffer = new StringBuffer
           val allFailureLogs = jivoxFakeServiceActor ? ReturnAllJivoxServiceLogsFailure
           allFailureLogs.onComplete {
             case Success(logs) =>
-              failureLogs ++ logs.asInstanceOf[Seq[String]]
+              failureLogs + logs.asInstanceOf[String]
             case _ =>
 
           }

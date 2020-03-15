@@ -37,24 +37,25 @@ class JivoxFakeServices extends Actor with ActorLogging{
 
       }
     case ReturnAllJivoxServiceLogsFailure =>
-
+      log.info(s"GET All failed Logs")
 
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
 
 
       implicit val timeout:Timeout = Timeout(1 second)
       implicit val dispatcher = context.dispatcher
-
+      val prevSender  = sender()
 
       val allFailureLogs = failureServiceLog ? "ReturnAllJivoxServiceLogsFailure"
       allFailureLogs.onComplete {
         case Success(logs) =>
 
           log.info(s"JivoxFakeServices: Got all logs from DB::::::::::::::::$logs")
-          sender() ! logs
+          prevSender ! logs
         case ex =>
           log.info(s"JivoxFakeServices: Got something else :$ex")
       }
+
   }
 
   def getProductName(): String =
