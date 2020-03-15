@@ -34,9 +34,16 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       val readServiceLogJournal = PersistenceQuery(readJournalActorSystem).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
       val persistenceIds = readServiceLogJournal.persistenceIds()
       implicit val materializer = ActorMaterializer()(readJournalActorSystem)
+      val logs:Seq[String] = Seq()
       persistenceIds.runForeach { id =>
+        logs + id
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$id")
       }
+
+      log.info(s"JivoxReadAllLogs: Got all logs from DB::::::::::::::::$logs")
+
+      sender() ! logs
+
     }
   override def persistenceId: String = "JivoxLogHandle"
 }

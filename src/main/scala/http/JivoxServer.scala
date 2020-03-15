@@ -8,8 +8,11 @@ import akka.http.scaladsl.server.Directives._
 import com.jivox.actor.JivoxFakeServices
 import com.jivox.actor.JivoxFakeServices.InitiateFloodingOfRequests
 import com.jivox.actor.JivoxReadAllLogs.ReturnAllJivoxServiceLogsFailure
-
+import akka.pattern.ask
+import akka.util.Timeout
+import scala.concurrent.duration._
 import scala.concurrent.Future
+import scala.util.Success
 import scala.io.StdIn
 
 object JivoxServer extends App {
@@ -20,13 +23,7 @@ object JivoxServer extends App {
 
   val jivoxFakeServiceActor = system.actorOf(Props[JivoxFakeServices],"jivoxFakeService")
 
-  val responseBackToClient = """
-                               |<html>
-                               | <body>
-                               |   Please enter the context
-                               | </body>
-                               |</html>
-        """.stripMargin
+
   val jivoxRoute =
     pathPrefix("jivox"){
       path("fakeMultiService"){
@@ -40,11 +37,24 @@ object JivoxServer extends App {
       path("getAllFailureServiceLogs"){
         get{
 
+          implicit val timeout:Timeout = Timeout(1 second)
 
+          val failureLogs:Seq[String] = Seq()
+          val allFailureLogs = jivoxFakeServiceActor ? ReturnAllJivoxServiceLogsFailure
+          allFailureLogs.onComplete {
+            case Success(logs) =>
+              failureLogs ++ logs.asInstanceOf[Seq[String]]
+            case _ =>
 
-          jivoxFakeServiceActor ! ReturnAllJivoxServiceLogsFailure
-
-
+          }
+          val responseBackToClient = s"""
+                                       |<html>
+                                       | <body>
+                                       |   All failure logs below:
+                                       |   $failureLogs
+                                       | </body>
+                                       |</html>
+        """.stripMargin
           complete(HttpEntity(
             ContentTypes.`text/html(UTF-8)`,
             responseBackToClient

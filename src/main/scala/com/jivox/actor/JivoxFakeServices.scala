@@ -3,10 +3,13 @@ package com.jivox.actor
 import java.util.UUID
 
 import akka.actor.{Actor, ActorLogging, ActorSystem}
-
+import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
 
-import scala.util.Random
+import scala.concurrent.duration._
+import akka.pattern.ask
+
+import scala.util.{Random, Success}
 
 object JivoxFakeServices{
 
@@ -37,7 +40,21 @@ class JivoxFakeServices extends Actor with ActorLogging{
 
 
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
-      failureServiceLog ! "ReturnAllJivoxServiceLogsFailure"
+
+
+      implicit val timeout:Timeout = Timeout(1 second)
+      implicit val dispatcher = context.dispatcher
+
+
+      val allFailureLogs = failureServiceLog ? "ReturnAllJivoxServiceLogsFailure"
+      allFailureLogs.onComplete {
+        case Success(logs) =>
+
+          log.info(s"JivoxFakeServices: Got all logs from DB::::::::::::::::$logs")
+          sender() ! logs
+        case _ =>
+          log.info(s"JivoxFakeServices: Got something else")
+      }
   }
 
   def getProductName(): String =
