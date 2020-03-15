@@ -7,6 +7,9 @@ import akka.persistence.query.PersistenceQuery
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 
+import scala.concurrent.{Await, Future}
+import scala.concurrent.duration.Duration
+
 object JivoxReadAllLogs{
 
   case object ReturnAllJivoxServiceLogsFailure
@@ -34,14 +37,15 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       val readServiceLogJournal = PersistenceQuery(readJournalActorSystem).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
       val persistenceIds = readServiceLogJournal.persistenceIds()
       implicit val materializer = ActorMaterializer()(readJournalActorSystem)
+      implicit val dispatcher = context.dispatcher
       val logs:StringBuffer = new StringBuffer
       logs.append("Dummy")
 
-      persistenceIds.runForeach { id =>
+     val ids = Future( persistenceIds.runForeach { id =>
         logs.append(s"\n $id")
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$id")
-      }
-      Thread.sleep(1000)
+      })
+      Await.ready(ids, Duration.Inf)
       sender() ! logs.toString
    }
   override def persistenceId: String = "JivoxLogHandle"
