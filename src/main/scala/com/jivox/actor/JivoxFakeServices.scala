@@ -52,8 +52,8 @@ class JivoxFakeServices extends Actor with ActorLogging{
 
           log.info(s"JivoxFakeServices: Got all logs from DB::::::::::::::::$logs")
           sender() ! logs
-        case _ =>
-          log.info(s"JivoxFakeServices: Got something else")
+        case ex =>
+          log.info(s"JivoxFakeServices: Got something else :$ex")
       }
   }
 
