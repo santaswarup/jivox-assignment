@@ -57,7 +57,7 @@ object JivoxServer extends App {
 
 
 
-  val bindingFuture = Http().bindAndHandle(jivoxRoute, "localhost", 8080)
+  val bindingFuture = Http().bindAndHandle(jivoxRoute, "localhost", 80)
   // wait for a new line, then terminate the server
   StdIn.readLine()
   bindingFuture
