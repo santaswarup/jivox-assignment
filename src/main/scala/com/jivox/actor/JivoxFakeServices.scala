@@ -42,7 +42,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
 
 
-      implicit val timeout:Timeout = Timeout(1 second)
+      implicit val timeout:Timeout = Timeout(5 second)
       implicit val dispatcher = context.dispatcher
       val prevSender  = sender()
 
