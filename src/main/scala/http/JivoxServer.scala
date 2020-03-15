@@ -10,8 +10,9 @@ import com.jivox.actor.JivoxFakeServices.InitiateFloodingOfRequests
 import com.jivox.actor.JivoxReadAllLogs.ReturnAllJivoxServiceLogsFailure
 import akka.pattern.ask
 import akka.util.Timeout
+
 import scala.concurrent.duration._
-import scala.concurrent.Future
+import scala.concurrent.{Await, Future}
 import scala.util.Success
 import scala.io.StdIn
 
@@ -44,9 +45,11 @@ object JivoxServer extends App {
           allFailureLogs.onComplete {
             case Success(logs) =>
               failureLogs.append(logs.asInstanceOf[String])
-            case _ =>
+            case _ => failureLogs.append("somethingelse")
 
           }
+
+          Await.ready(allFailureLogs, Duration.Inf)
           val responseBackToClient = s"""
                                        |<html>
                                        | <body>

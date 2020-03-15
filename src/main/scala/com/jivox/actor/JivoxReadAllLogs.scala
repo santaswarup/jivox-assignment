@@ -38,7 +38,7 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       logs.append("Dummy")
 
       persistenceIds.runForeach { id =>
-        logs.append(id)
+        logs.append(s"\n $id")
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$id")
       }
       Thread.sleep(1000)
