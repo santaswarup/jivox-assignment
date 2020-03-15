@@ -36,6 +36,7 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       implicit val materializer = ActorMaterializer()(readJournalActorSystem)
       val logs:StringBuffer = new StringBuffer
       logs.append("Dummy")
+      Thread.sleep(1000)
       persistenceIds.runForeach { id =>
         logs.append(id)
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$id")

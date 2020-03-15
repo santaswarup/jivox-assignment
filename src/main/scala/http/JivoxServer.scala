@@ -43,7 +43,7 @@ object JivoxServer extends App {
           val allFailureLogs = jivoxFakeServiceActor ? ReturnAllJivoxServiceLogsFailure
           allFailureLogs.onComplete {
             case Success(logs) =>
-              failureLogs + logs.asInstanceOf[String]
+              failureLogs.append(logs.asInstanceOf[String])
             case _ =>
 
           }
