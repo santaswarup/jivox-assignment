@@ -38,7 +38,7 @@ object JivoxServer extends App {
       path("getAllFailureServiceLogs"){
         get{
 
-          implicit val timeout:Timeout = Timeout(7 second)
+          implicit val timeout:Timeout = Timeout(10 second)
 
           val failureLogs:StringBuffer = new StringBuffer
           val allFailureLogs = jivoxFakeServiceActor ? ReturnAllJivoxServiceLogsFailure
