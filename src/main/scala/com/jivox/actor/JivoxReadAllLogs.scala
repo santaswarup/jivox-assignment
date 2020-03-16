@@ -40,16 +40,6 @@ class JivoxReadAllLogs() extends Actor with ActorLogging{
         case Failure(_) => log.info(s"JivoxReadAllLogs: persistenceIds onComplete:Failed:::::::::::::::$logs")
 
       }
-      persistenceevents.runForeach { events =>
-
-        log.info(s"JivoxReadAllLogs: events::::::::::::::::$events")
-      }.onComplete {
-        case Success(_) =>       log.info(s"JivoxReadAllLogs:persistenceevents onComplete:Success:::::::::::::::")
-
-        case Failure(_) => log.info(s"JivoxReadAllLogs:persistenceevents onComplete:Failed:::::::::::::::")
-
-      }
-
 
    }
 }

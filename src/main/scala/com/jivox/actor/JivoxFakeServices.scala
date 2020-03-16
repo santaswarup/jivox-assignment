@@ -29,7 +29,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
 
       val logHandler = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxLogHandler")
 
-      (0 to 10).foreach { _ =>
+      (0 to 1000).foreach { _ =>
         val randomNumber = Random.nextInt()
         val uuid:UUID = UUID.randomUUID()
         val domainData: JivoxServiceDomainData = JivoxServiceDomainData(uuid,getProductName(),getLocation())
@@ -42,7 +42,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
 
 
-      implicit val timeout:Timeout = Timeout(10 second)
+      implicit val timeout:Timeout = Timeout(2 seconds)
       implicit val dispatcher = context.dispatcher
       val prevSender  = sender()
 

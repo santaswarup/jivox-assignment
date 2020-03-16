@@ -28,8 +28,6 @@ object JivoxServer extends App {
     pathPrefix("jivox"){
       path("pushFailureLogs"){
         post{
-
-
             jivoxFakeServiceActor ! InitiateFloodingOfRequests
             complete(Future(StatusCodes.OK))
           }
@@ -37,14 +35,14 @@ object JivoxServer extends App {
       path("getAllFailureServiceLogs"){
         get{
 
-          implicit val timeout:Timeout = Timeout(10 second)
+          implicit val timeout:Timeout = Timeout(2 seconds)
 
           val failureLogs:StringBuffer = new StringBuffer
           val allFailureLogs = jivoxFakeServiceActor ? GetPersistenceIds
           allFailureLogs.onComplete {
             case Success(logs) =>
               failureLogs.append(logs.asInstanceOf[String])
-            case _ => failureLogs.append("somethingelse")
+            case _ => failureLogs.append("Something went wrong")
 
           }
 
