@@ -14,7 +14,7 @@ object JivoxReadAllLogs{
 
   case object ReturnAllJivoxServiceLogsFailure
   val readJournalActorSystem = ActorSystem("readServiceLogJournal",ConfigFactory.load("jivox.conf")
-    .getConfig("jivoxReadJournalConfig"))
+    .getConfig("jivoxFailureHandlerConfig"))
 }
 
 class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
