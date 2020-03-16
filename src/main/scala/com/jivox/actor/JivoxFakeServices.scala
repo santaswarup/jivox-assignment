@@ -12,7 +12,7 @@ import akka.pattern.ask
 import scala.util.{Random, Success}
 
 object JivoxFakeServices{
-
+  case object GetPersistenceIds
   val jivoxFakeServiceActorSystem = ActorSystem("JivoxFakeServicesActorSystem",ConfigFactory.load("jivox.conf"))
   case object InitiateFloodingOfRequests
 
@@ -36,7 +36,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
         logHandler ! JivoxServiceLogsFailure(getTenant(),getServer(), getProductName(), getLocation)
 
       }
-    case ReturnAllJivoxServiceLogsFailure =>
+    case GetPersistenceIds =>
       log.info(s"GET All failed Logs")
 
       val failureServiceLog = jivoxFakeServiceActorSystem.actorSelection("akka://JivoxLogHandlerActorSystem@localhost:5555/user/jivoxReadAllLogs")
@@ -46,7 +46,7 @@ class JivoxFakeServices extends Actor with ActorLogging{
       implicit val dispatcher = context.dispatcher
       val prevSender  = sender()
 
-      val allFailureLogs = failureServiceLog ? "ReturnAllJivoxServiceLogsFailure"
+      val allFailureLogs = failureServiceLog ? ReadAllIds
       allFailureLogs.onComplete {
         case Success(logs) =>
 

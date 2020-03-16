@@ -1,56 +1,55 @@
 package com.jivox.actor
 
-import akka.actor.{ActorLogging, ActorSystem}
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import akka.persistence.PersistentActor
 import akka.persistence.cassandra.query.scaladsl.CassandraReadJournal
 import akka.persistence.query.PersistenceQuery
 import akka.stream.ActorMaterializer
 import com.typesafe.config.ConfigFactory
 
-import scala.concurrent.{Await, Future}
-import scala.concurrent.duration.Duration
+import scala.util._
 
 object JivoxReadAllLogs{
-
-  case object ReturnAllJivoxServiceLogsFailure
+  case object ReadAllIds
   val readJournalActorSystem = ActorSystem("readServiceLogJournal",ConfigFactory.load("jivox.conf")
     .getConfig("jivoxFailureHandlerConfig"))
 }
 
-class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
+class JivoxReadAllLogs() extends Actor with ActorLogging{
   import JivoxReadAllLogs._
- // val serviceLogs: Map[UUID,JivoxServiceLogsFailure] = Map()
-  override def receiveRecover: Receive = {
-     case serviceFailed@JivoxServiceLogsFailure(tenant, hostedService, productName, location) =>
-
-     // serviceLogs + (domainData.requestID -> serviceFailed)
-      log.info(s"JivoxReadAllLogs: Recover from JivoxServiceFailure from persistent store::::::::::::::::$serviceFailed")
-     case _ =>
-  }
 
 
 
-  override def receiveCommand: Receive = {
+  override def receive: Receive = {
     case _ =>
       log.info(s"JivoxReadAllLogs: Returning ReturnAllJivoxServiceLogsFailure::::::::::::::::")
 
       val readServiceLogJournal = PersistenceQuery(readJournalActorSystem).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
-      val persistenceIds = readServiceLogJournal.eventsByPersistenceId("JivoxLogHandle",0,20)
+      val persistenceIds = readServiceLogJournal.currentPersistenceIds()
+      val persistenceevents = readServiceLogJournal.eventsByPersistenceId("JivoxLogHandle",0,20)
       implicit val materializer = ActorMaterializer()(readJournalActorSystem)
       implicit val dispatcher = context.dispatcher
       val logs:StringBuffer = new StringBuffer
       logs.append("Dummy")
+      persistenceIds.runForeach { ids =>
+        logs.append(ids)
+        log.info(s"JivoxReadAllLogs: persistenceids::::::::::::::::$ids")
+      }.onComplete {
+        case Success(_) =>       log.info(s"JivoxReadAllLogs: persistenceIds onComplete:Success:::::::::::::::$logs")
+          sender() ! logs.toString
+        case Failure(_) => log.info(s"JivoxReadAllLogs: persistenceIds onComplete:Failed:::::::::::::::$logs")
 
-     persistenceIds.runForeach { events =>
-        //logs.append(s" $events")
-        log.info(s"JivoxReadAllLogs: events::::::::::::::::$events")
       }
-      Thread.sleep(4000)
-       log.info(s"JivoxReadAllLogs: onComplete::::::::::::::::$logs")
-       sender() ! logs.toString
+      persistenceevents.runForeach { events =>
 
+        log.info(s"JivoxReadAllLogs: events::::::::::::::::$events")
+      }.onComplete {
+        case Success(_) =>       log.info(s"JivoxReadAllLogs:persistenceevents onComplete:Success:::::::::::::::")
+
+        case Failure(_) => log.info(s"JivoxReadAllLogs:persistenceevents onComplete:Failed:::::::::::::::")
+
+      }
 
 
    }
-  override def persistenceId: String = "JivoxLogHandle"
 }

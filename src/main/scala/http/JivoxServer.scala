@@ -6,8 +6,7 @@ import akka.http.scaladsl.model._
 import akka.stream.ActorMaterializer
 import akka.http.scaladsl.server.Directives._
 import com.jivox.actor.JivoxFakeServices
-import com.jivox.actor.JivoxFakeServices.InitiateFloodingOfRequests
-import com.jivox.actor.JivoxReadAllLogs.ReturnAllJivoxServiceLogsFailure
+import com.jivox.actor.JivoxFakeServices.{GetPersistenceIds, InitiateFloodingOfRequests}
 import akka.pattern.ask
 import akka.util.Timeout
 
@@ -27,7 +26,7 @@ object JivoxServer extends App {
 
   val jivoxRoute =
     pathPrefix("jivox"){
-      path("fakeMultiService"){
+      path("pushFailureLogs"){
         post{
 
 
@@ -41,7 +40,7 @@ object JivoxServer extends App {
           implicit val timeout:Timeout = Timeout(10 second)
 
           val failureLogs:StringBuffer = new StringBuffer
-          val allFailureLogs = jivoxFakeServiceActor ? ReturnAllJivoxServiceLogsFailure
+          val allFailureLogs = jivoxFakeServiceActor ? GetPersistenceIds
           allFailureLogs.onComplete {
             case Success(logs) =>
               failureLogs.append(logs.asInstanceOf[String])
