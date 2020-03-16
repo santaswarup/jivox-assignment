@@ -41,12 +41,15 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       val logs:StringBuffer = new StringBuffer
       logs.append("Dummy")
 
-     val ids = Future( persistenceIds.runForeach { events =>
+     persistenceIds.runForeach { events =>
         logs.append(s"\\n $events")
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$events")
-      })
-      Await.ready(ids, Duration.Inf)
-      sender() ! logs.toString
+      }.onComplete { _ =>
+       log.info(s"JivoxReadAllLogs: onComplete::::::::::::::::$logs")
+       sender() ! logs.toString
+     }
+
+
    }
   override def persistenceId: String = "JivoxLogHandle"
 }
