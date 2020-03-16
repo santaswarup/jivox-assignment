@@ -35,7 +35,7 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
       log.info(s"JivoxReadAllLogs: Returning ReturnAllJivoxServiceLogsFailure::::::::::::::::")
 
       val readServiceLogJournal = PersistenceQuery(readJournalActorSystem).readJournalFor[CassandraReadJournal](CassandraReadJournal.Identifier)
-      val persistenceIds = readServiceLogJournal.currentEventsByPersistenceId("JivoxLogHandle",0,Long.MaxValue)
+      val persistenceIds = readServiceLogJournal.currentEventsByPersistenceId("JivoxLogHandle",0,20)
       implicit val materializer = ActorMaterializer()(readJournalActorSystem)
       implicit val dispatcher = context.dispatcher
       val logs:StringBuffer = new StringBuffer
@@ -44,10 +44,11 @@ class JivoxReadAllLogs() extends PersistentActor with ActorLogging{
      persistenceIds.runForeach { events =>
         logs.append(s"\\n $events")
         log.info(s"JivoxReadAllLogs: persistenceIds::::::::::::::::$events")
-      }.onComplete { _ =>
+      }
+      Thread.sleep(4000)
        log.info(s"JivoxReadAllLogs: onComplete::::::::::::::::$logs")
        sender() ! logs.toString
-     }
+
 
 
    }
